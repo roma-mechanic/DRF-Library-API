@@ -1,8 +1,5 @@
-from django.shortcuts import redirect
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import generics, permissions
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.generics import ListAPIView
+from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,32 +10,40 @@ from rest_framework_simplejwt.token_blacklist.models import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from user.models import UserProfile
+from user.models import UserProfile, User
 from user.serializers import (
     UserSerializer,
     UserDetailSerializer,
     UserProfileListSerializer,
     UserProfileCreateSerializer,
     UserProfileDetailSerializer,
+    UserListSerializer,
 )
-
-"""register user"""
 
 
 class CreateUserView(generics.CreateAPIView):
+    """create/register user"""
+
     serializer_class = UserSerializer
 
 
-"""Detail info by user"""
-
-
 class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
+    """Detail info by user, update users info, delete user"""
+
     serializer_class = UserDetailSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         return self.request.user
+
+
+class UsersListView(generics.ListAPIView):
+    """All users list"""
+
+    queryset = User.objects.all()
+    serializer_class = UserListSerializer
+    permission_classes = (IsAdminUser,)
 
 
 class APILogoutView(APIView):
@@ -120,13 +125,13 @@ class UserProfileCreateView(generics.CreateAPIView):
 class UserProfileDetailView(generics.RetrieveAPIView):
     queryset = UserProfile.objects.select_related("user")
     serializer_class = UserProfileDetailSerializer
-    permission_classes = IsAuthenticated | IsAdminUser
+    permission_classes = (IsAuthenticated | IsAdminUser,)
 
 
 class UserProfileUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserProfile.objects.select_related("user")
     serializer_class = UserProfileDetailSerializer
-    permission_classes = IsAuthenticated | IsAdminUser
+    permission_classes = (IsAuthenticated | IsAdminUser,)
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)

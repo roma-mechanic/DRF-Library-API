@@ -13,6 +13,7 @@ from user.views import (
     UserProfileCreateView,
     UserProfileDetailView,
     UserProfileUpdateDeleteView,
+    UsersListView,
 )
 
 app_name = "user"
@@ -24,6 +25,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("me/", ManageUserView.as_view(), name="manage"),
+    path("all_users/", UsersListView.as_view(), name="all-users"),
     # path("<int:pk>/posts/", UserPostListAPIView.as_view(), name="user-posts"),
     path(
         "user_profile/",
