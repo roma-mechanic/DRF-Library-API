@@ -82,5 +82,6 @@ class UserProfile(models.Model):
         upload_to=movie_image_file_path, blank=True
     )
 
+
 # def get_posts_count(self):
 #     return self.posts.count()
