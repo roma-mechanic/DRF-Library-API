@@ -9,7 +9,6 @@ from user.views import (
     CreateUserView,
     ManageUserView,
     APILogoutView,
-    UserPostListAPIView,
     UserProfileListView,
     UserProfileCreateView,
     UserProfileDetailView,
@@ -25,7 +24,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("me/", ManageUserView.as_view(), name="manage"),
-    path("<int:pk>/posts/", UserPostListAPIView.as_view(), name="user-posts"),
+    # path("<int:pk>/posts/", UserPostListAPIView.as_view(), name="user-posts"),
     path(
         "user_profile/",
         UserProfileListView.as_view(),

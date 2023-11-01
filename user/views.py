@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -58,24 +58,24 @@ class APILogoutView(APIView):
         return Response({"status": "OK, goodbye"})
 
 
-class UserPostListAPIView(ListAPIView):
-    """Search for all posts by a given author by his UserProfile ID"""
-
-    serializer_class = PostListSerializer
-
-    def get_queryset(self):
-        return (
-            Post.objects.filter(author__id=self.kwargs["pk"])
-            .select_related("author")
-            .prefetch_related("comments", "likes")
-        )
+# class UserPostListAPIView(ListAPIView):
+#     """Search for all borrows by a given user by his UserProfile ID"""
+#
+#     serializer_class = PostListSerializer
+#
+#     def get_queryset(self):
+#         return (
+#             Post.objects.filter(author__id=self.kwargs["pk"])
+#             .select_related("author")
+#             .prefetch_related("comments", "likes")
+#         )
 
 
 class UserProfileListView(generics.ListAPIView):
     queryset = UserProfile.objects.select_related("user")
 
     serializer_class = UserProfileListSerializer
-    permission_classes = (IsAuthenticated | permissions.IsAdminUser,)
+    permission_classes = (IsAuthenticated | IsAdminUser,)
 
     def get_queryset(self):
         user = self.request.query_params.get("user")
@@ -118,19 +118,15 @@ class UserProfileCreateView(generics.CreateAPIView):
 
 
 class UserProfileDetailView(generics.RetrieveAPIView):
-    queryset = UserProfile.objects.select_related("user").prefetch_related(
-        "followers", "following", "posts"
-    )
+    queryset = UserProfile.objects.select_related("user")
     serializer_class = UserProfileDetailSerializer
-    permission_classes = (IsAuthenticated | permissions.IsAdminUser,)
+    permission_classes = IsAuthenticated | IsAdminUser
 
 
 class UserProfileUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = UserProfile.objects.select_related("user").prefetch_related(
-        "followers", "following"
-    )
+    queryset = UserProfile.objects.select_related("user")
     serializer_class = UserProfileDetailSerializer
-    permission_classes = (IsAuthenticated | permissions.IsAdminUser,)
+    permission_classes = IsAuthenticated | IsAdminUser
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
