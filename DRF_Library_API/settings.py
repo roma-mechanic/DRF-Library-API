@@ -26,6 +26,8 @@ SECRET_KEY = (
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+AUTH_USER_MODEL = "user.User"
+
 ALLOWED_HOSTS = []
 
 INTERNAL_IPS = [
@@ -109,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Ukraine/Kiev"
 
 USE_I18N = True
 
