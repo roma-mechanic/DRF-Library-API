@@ -11,8 +11,8 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     Lists all the books . Anon users can read books list.
 
     EXAMPLE:
-        GET -> /books/list/ -> returns all books
-        GET -> /books/list/{id}/ -> return the book detail
+        GET -> /books/list/ -> returns all books.\
+        GET -> /books/list/{id}/ -> return the book detail.
     """
 
     queryset = Book.objects.all()
@@ -33,6 +33,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset.distinct()
 
     @extend_schema(
+        summary="Search by books title, books author",
         parameters=[
             OpenApiParameter(
                 name="title",
@@ -44,7 +45,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
                 type=str,
                 description="Filter by authors username  (ex: ?author=Bob)",
             ),
-        ]
+        ],
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
