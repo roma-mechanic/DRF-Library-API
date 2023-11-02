@@ -16,3 +16,14 @@ class BookSerializer(serializers.ModelSerializer):
             "daily_fee",
             "image",
         ]
+
+
+class BookListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = [
+            "id",
+            "title",
+            "author",
+            "annotation",
+        ]

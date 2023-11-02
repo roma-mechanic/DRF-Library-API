@@ -3,7 +3,7 @@ from rest_framework import viewsets, generics
 from rest_framework.permissions import AllowAny, IsAdminUser
 
 from book.models import Book
-from book.serializers import BookSerializer
+from book.serializers import BookSerializer, BookListSerializer
 
 
 class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
@@ -11,12 +11,12 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     Lists all the books . Anon users can read books list.
 
     EXAMPLE:
-        GET -> /books/ -> returns all books
-        GET -> /books/{id}/ -> return the book detail
+        GET -> /books/list/ -> returns all books
+        GET -> /books/list/{id}/ -> return the book detail
     """
 
     queryset = Book.objects.all()
-    serializer_class = BookSerializer
+    serializer_class = BookListSerializer
     permission_classes = (AllowAny,)
 
     def get_queryset(self):
@@ -29,7 +29,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(title__icontains=title)
 
         if author:
-            queryset = queryset.filter(author__username__icontains=author)
+            queryset = queryset.filter(author__icontains=author)
         return queryset.distinct()
 
     @extend_schema(
@@ -46,7 +46,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             ),
         ]
     )
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
 
