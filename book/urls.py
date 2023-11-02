@@ -1,4 +1,6 @@
 from django.urls import path, include
+
+
 from rest_framework import routers
 
 from book.views import (
@@ -10,12 +12,12 @@ from book.views import (
 app_name = "book"
 
 router = routers.SimpleRouter()
-router.register(r"books", BookReadOnlyViewSet, basename="books")
+router.register(r"", BookReadOnlyViewSet, basename="books")
 
 urlpatterns = [
     path("", include(router.urls)),
     path("create/", BookCreateView.as_view(), name="book-create"),
     path(
-        "/<int:id>/update/", BookUpdateDeleteView.as_view(), name="book-update"
+        "<int:pk>/update/", BookUpdateDeleteView.as_view(), name="book-update"
     ),
 ]
