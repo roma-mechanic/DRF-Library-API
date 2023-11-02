@@ -92,11 +92,14 @@ class UserProfileDetailSerializer(serializers.ModelSerializer):
 
 
 class UserProfileListSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(source="user.email", read_only=True)
+
     class Meta:
         model = UserProfile
         fields = (
             "id",
             "user_id",
+            "email",
             "username",
             "profile_image",
         )

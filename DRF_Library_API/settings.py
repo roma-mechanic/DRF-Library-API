@@ -125,8 +125,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Social Media API",
-    "DESCRIPTION": "Social network",
+    "TITLE": "DRF library API",
+    "DESCRIPTION": "Library managing",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_SETTINGS": {

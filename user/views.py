@@ -1,5 +1,6 @@
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import generics
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -46,7 +47,7 @@ class UsersListView(generics.ListAPIView):
     permission_classes = (IsAdminUser,)
 
 
-class APILogoutView(APIView):
+class APILogoutView(GenericAPIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -99,17 +100,19 @@ class UserProfileListView(generics.ListAPIView):
         parameters=[
             OpenApiParameter(
                 name="user",
+                location=OpenApiParameter.QUERY,
                 type=str,
                 description="Search user by email (ex. ?user=user@test.com)",
             ),
             OpenApiParameter(
                 name="username",
+                location=OpenApiParameter.QUERY,
                 type=str,
                 description="Search user by username  (ex: ?username=Bob)",
             ),
         ]
     )
-    def list(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
 
