@@ -1,7 +1,6 @@
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, generics, mixins
+from rest_framework import viewsets, generics
 from rest_framework.permissions import AllowAny, IsAdminUser
-from rest_framework.viewsets import GenericViewSet
 
 from book.models import Book
 from book.serializers import BookSerializer
@@ -18,7 +17,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = AllowAny
+    permission_classes = (AllowAny,)
 
     def get_queryset(self):
         title = self.request.query_params.get("title")
@@ -38,7 +37,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             OpenApiParameter(
                 name="title",
                 type=str,
-                description="Filter by title (ex. ?title=Cars)",
+                description="Filter by title (ex. ?title=Harry)",
             ),
             OpenApiParameter(
                 name="author",
@@ -63,14 +62,12 @@ class BookCreateView(generics.CreateAPIView):
     permission_classes = (IsAdminUser,)
 
 
-class BookUpdateDeleteView(
-    mixins.UpdateModelMixin, mixins.DestroyModelMixin, GenericViewSet
-):
+class BookUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     """Only admin can change or delete books
     PUT, PATCH, DELETE -> /books/<id>/update/ -> put,
     patch, delete book with books ID
     """
 
-    queryset = Book.objects.get(pk=id)
+    queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = (IsAdminUser,)

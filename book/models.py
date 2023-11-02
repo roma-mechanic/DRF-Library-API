@@ -21,7 +21,7 @@ class Book(models.Model):
         max_length=100,
     )
     author = models.CharField(max_length=100)
-    annotation = models.TextField
+    annotation = models.TextField(blank=True)
     cover = models.CharField(max_length=4, choices=CoverChoices.choices)
     inventory = models.PositiveIntegerField()
     daily_fee = models.DecimalField(max_digits=5, decimal_places=2)
