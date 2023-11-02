@@ -45,7 +45,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
                 type=str,
                 description="Filter by authors username  (ex: ?author=Bob)",
             ),
-        ],
+        ]
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
