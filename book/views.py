@@ -33,7 +33,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset.distinct()
 
     @extend_schema(
-        summary="Search by books title, books author",
+        summary="Search books by title or author",
         parameters=[
             OpenApiParameter(
                 name="title",

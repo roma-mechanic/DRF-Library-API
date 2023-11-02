@@ -97,6 +97,7 @@ class UserProfileListView(generics.ListAPIView):
         return queryset.distinct()
 
     @extend_schema(
+        summary="Search user profile by user email or username",
         parameters=[
             OpenApiParameter(
                 name="user",
