@@ -28,6 +28,7 @@ SECRET_KEY = (
 DEBUG = True
 
 AUTH_USER_MODEL = "user.User"
+BORROWING_DAYS = 14
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
@@ -125,6 +126,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DATE_INPUT_FORMATS": ["%d-%m-%Y"],
+    "DATE_FORMAT": "%d-%m-%Y",
 }
 
 SPECTACULAR_SETTINGS = {
