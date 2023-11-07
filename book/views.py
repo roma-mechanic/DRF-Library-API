@@ -1,23 +1,37 @@
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, generics
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework import viewsets, permissions
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from book.models import Book
 from book.serializers import BookSerializer, BookListSerializer
 
 
-class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+class BookReadOnlyViewSet(viewsets.ModelViewSet):
     """
     Lists all the books . Anon users can read books list.
 
     EXAMPLE:
-        GET -> /books/list/ -> returns all books.\
-        GET -> /books/list/{id}/ -> return the book detail.
+
+        GET -> /books/ -> create book and returns all books.
+        GET -> /books/{id}/ -> return the book detail, update, delete books.
+        Only admin can create, update, delete books.
     """
 
     queryset = Book.objects.all()
-    serializer_class = BookListSerializer
-    permission_classes = (AllowAny,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return BookListSerializer
+        return BookSerializer
+
+    def get_permissions(self):
+        if self.action == "list":
+            self.permission_classes = (permissions.AllowAny,)
+        if self.action == "retrieve":
+            self.permission_classes = (IsAuthenticated,)
+        if self.action == ("update", "destroy", "create", "partial_update"):
+            self.permission_classes = (IsAdminUser,)
+        return [permission() for permission in self.permission_classes]
 
     def get_queryset(self):
         title = self.request.query_params.get("title")
@@ -45,30 +59,7 @@ class BookReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
                 type=str,
                 description="Filter by authors username  (ex: ?author=Bob)",
             ),
-        ]
+        ],
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-
-
-class BookCreateView(generics.CreateAPIView):
-    """
-    Create  new book. AdminUser only.
-
-    EXAMPLE:
-        POST -> /books/create/-> create new book
-    """
-
-    serializer_class = BookSerializer
-    permission_classes = (IsAdminUser,)
-
-
-class BookUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
-    """Only admin can change or delete books
-    PUT, PATCH, DELETE -> /books/<id>/update/ -> put,
-    patch, delete book with books ID
-    """
-
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
-    permission_classes = (IsAdminUser,)

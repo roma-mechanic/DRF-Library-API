@@ -26,4 +26,5 @@ class BookListSerializer(serializers.ModelSerializer):
             "title",
             "author",
             "annotation",
+            "inventory",
         ]
