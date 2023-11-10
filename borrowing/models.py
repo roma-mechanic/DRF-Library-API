@@ -14,8 +14,10 @@ from user.models import UserProfile
 
 class Borrowing(models.Model):
     borrow_date = models.DateField(auto_now_add=True)
-    expected_return_date = models.DateField(editable=False)
-    actual_return_date = models.DateField(auto_now_add=True)
+    expected_return_date = models.DateField(blank=True, null=True)
+    actual_return_date = models.DateField(
+        auto_now=False, null=True, blank=True
+    )
     book = models.ManyToManyField(Book, related_name="borrowing")
     user = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name="borrowing"
@@ -26,7 +28,7 @@ class Borrowing(models.Model):
         ordering = ("-borrow_date",)
 
     def clean(self):
-        self.expected_return_date = self.borrow_date + datetime.timedelta(
+        self.expected_return_date = date.today() + datetime.timedelta(
             days=BORROWING_DAYS
         )
 
