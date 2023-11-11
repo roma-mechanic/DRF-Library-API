@@ -1,13 +1,15 @@
-from django.shortcuts import render
+from datetime import date
+
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
 
 from borrowing.models import Borrowing
 from borrowing.serializers import (
     BorrowingSerializer,
-    BorrowingCreateSerializer,
-    # BorrowingCreateSerializer,
+    BorrowingBookReturnSerializer,
 )
 
 
@@ -15,7 +17,6 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     queryset = Borrowing.objects.select_related("user").prefetch_related(
         "book"
     )
-    # serializer_class = BorrowingSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -30,7 +31,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             if is_active:
                 queryset = queryset.filter(is_active=is_active)
 
-            return queryset
+            return queryset.distinct()
 
         return queryset.filter(user=self.request.user.profile)
 
@@ -56,6 +57,21 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user.profile)
 
     def get_serializer_class(self):
-        if self.action == "create":
-            return BorrowingCreateSerializer
+        if self.action == "return_book":
+            return BorrowingBookReturnSerializer
         return BorrowingSerializer
+
+    @action(
+        methods=["PATCH"],
+        detail=True,
+        url_path="return",
+        permission_classes=[IsAdminUser],
+    )
+    def return_book(self, request, pk=None):
+        borrowing = self.get_object()
+        data = {"actual_return_date": date.today(), "is_active": False}
+        serializer = self.get_serializer(borrowing, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

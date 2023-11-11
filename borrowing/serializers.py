@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from book.serializers import BookSerializer
 from borrowing.models import Borrowing
 
 
@@ -37,34 +36,6 @@ class BorrowingSerializer(serializers.ModelSerializer):
             "user",
         ]
 
-    # def create(self, validated_data):
-    #     print(validated_data)
-    #     books_data = validated_data.pop("book")
-    #     print(books_data, validated_data)
-    #
-    #     borrow = Borrowing.objects.create(**validated_data)
-    #
-    #     for book in books_data:
-    #         if book.inventory != 0:
-    #             book.inventory -= 1
-    #             book.save()
-    #             borrow.book.add(book)
-    #         else:
-    #             raise serializers.ValidationError(
-    #                 f"The book '{book.title}' temporarily unavailable"
-    #             )
-    #     return borrow
-
-
-class BorrowingCreateSerializer(serializers.ModelSerializer):
-    # book = BookSerializer(many=True)
-
-    class Meta:
-        model = Borrowing
-        fields = [
-            "book",
-        ]
-
     def create(self, validated_data):
         print(validated_data)
         books_data = validated_data.pop("book")
@@ -77,9 +48,14 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
                 book.inventory -= 1
                 book.save()
                 borrow.book.add(book)
-                borrow.save()
             else:
                 raise serializers.ValidationError(
                     f"The book '{book.title}' temporarily unavailable"
                 )
         return borrow
+
+
+class BorrowingBookReturnSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Borrowing
+        fields = ["actual_return_date", "is_active"]
