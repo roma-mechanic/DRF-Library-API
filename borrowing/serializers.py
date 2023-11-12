@@ -37,9 +37,7 @@ class BorrowingSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        print(validated_data)
         books_data = validated_data.pop("book")
-        print(books_data, validated_data)
 
         borrow = Borrowing.objects.create(**validated_data)
 

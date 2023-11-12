@@ -27,5 +27,8 @@ class Book(models.Model):
     daily_fee = models.DecimalField(max_digits=5, decimal_places=2)
     image = models.ImageField(null=True, upload_to=movie_image_file_path)
 
+    class Meta:
+        indexes = [models.Index(fields=["title", "author"])]
+
     def __str__(self):
         return f"{self.author}: {self.title}"

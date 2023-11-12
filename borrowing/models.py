@@ -20,6 +20,9 @@ class Borrowing(models.Model):
 
     class Meta:
         ordering = ("-borrow_date",)
+        indexes = [models.Index(fields=["user", "is_active"]),
+                   models.Index(fields=["expected_return_date"])
+                   ]
 
     def clean(self):
         self.expected_return_date = date.today() + datetime.timedelta(
