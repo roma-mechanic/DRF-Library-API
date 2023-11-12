@@ -69,9 +69,13 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     )
     def return_book(self, request, pk=None):
         borrowing = self.get_object()
-        data = {"actual_return_date": date.today(), "is_active": False}
-        serializer = self.get_serializer(borrowing, data=data, partial=True)
-        if serializer.is_valid():
+        if borrowing.is_active:
+            data = {"actual_return_date": date.today(), "is_active": False}
+            serializer = self.get_serializer(
+                borrowing, data=data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response("This borrowing is already returned")
