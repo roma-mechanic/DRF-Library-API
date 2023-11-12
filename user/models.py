@@ -75,7 +75,7 @@ class UserProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="profile",
     )
-    username = models.CharField(max_length=50)
+    username = models.CharField(max_length=50, unique=True)
     bio = models.TextField(max_length=500, blank=True)
     phone_num = models.CharField(max_length=20, blank=True, unique=True)
     profile_image = models.ImageField(

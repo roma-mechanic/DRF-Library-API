@@ -30,5 +30,5 @@ class Borrowing(models.Model):
         )
 
     def save(self, **kwargs):
-        self.clean()
+        self.full_clean()
         return super().save(**kwargs)

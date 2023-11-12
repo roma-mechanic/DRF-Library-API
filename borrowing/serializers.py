@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from borrowing.models import Borrowing
@@ -37,20 +38,21 @@ class BorrowingSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        books_data = validated_data.pop("book")
+        with transaction.atomic():
+            books_data = validated_data.pop("book")
 
-        borrow = Borrowing.objects.create(**validated_data)
+            borrow = Borrowing.objects.create(**validated_data)
 
-        for book in books_data:
-            if book.inventory != 0:
-                book.inventory -= 1
-                book.save()
-                borrow.book.add(book)
-            else:
-                raise serializers.ValidationError(
-                    f"The book '{book.title}' temporarily unavailable"
-                )
-        return borrow
+            for book in books_data:
+                if book.inventory != 0:
+                    book.inventory -= 1
+                    book.save()
+                    borrow.book.add(book)
+                else:
+                    raise serializers.ValidationError(
+                        f"The book '{book.title}' temporarily unavailable"
+                    )
+            return borrow
 
 
 class BorrowingBookReturnSerializer(serializers.ModelSerializer):
