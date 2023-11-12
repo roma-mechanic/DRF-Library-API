@@ -71,6 +71,10 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     def return_book(self, request, pk=None):
         borrowing = self.get_object()
         if borrowing.is_active:
+            books = borrowing.book.all()
+            for book in books:
+                book.inventory += 1
+                book.save()
             data = {"actual_return_date": date.today(), "is_active": False}
             serializer = self.get_serializer(
                 borrowing, data=data, partial=True
