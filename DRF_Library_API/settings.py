@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "user",
     "book",
     "borrowing",
+    "payment",
 ]
 
 MIDDLEWARE = [
@@ -170,3 +171,6 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
