@@ -5,15 +5,21 @@ from borrowing.models import Borrowing
 
 class Payment(models.Model):
     class StatusChoices(models.TextChoices):
-        PENDING = "pending"
-        PAID = "paid"
+        PENDING = "pending"  # очікування
+        PAID = "paid"  # оплачено
 
     class TypeChoices(models.TextChoices):
         PAYMENT = "payment"
         FINE = "fine"
 
-    status = models.CharField(max_length=7, choices=StatusChoices.choices)
-    type = models.CharField(max_length=7, choices=TypeChoices.choices)
+    status = models.CharField(
+        max_length=7,
+        choices=StatusChoices.choices,
+        default=StatusChoices.PENDING,
+    )
+    type = models.CharField(
+        max_length=7, choices=TypeChoices.choices, default=TypeChoices.PAYMENT
+    )
     borrowing = models.OneToOneField(Borrowing, on_delete=models.CASCADE)
     session_url = models.URLField()
     session_id = models.CharField(max_length=255)
