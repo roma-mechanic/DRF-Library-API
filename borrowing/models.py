@@ -2,6 +2,7 @@ import datetime
 from datetime import date
 
 from django.db import models
+from django.db.models import Count, F, Sum
 
 from DRF_Library_API.settings import BORROWING_DAYS
 from book.models import Book
@@ -20,9 +21,10 @@ class Borrowing(models.Model):
 
     class Meta:
         ordering = ("-borrow_date",)
-        indexes = [models.Index(fields=["user", "is_active"]),
-                   models.Index(fields=["expected_return_date"])
-                   ]
+        indexes = [
+            models.Index(fields=["user", "is_active"]),
+            models.Index(fields=["expected_return_date"]),
+        ]
 
     def clean(self):
         self.expected_return_date = date.today() + datetime.timedelta(
@@ -32,3 +34,7 @@ class Borrowing(models.Model):
     def save(self, **kwargs):
         self.full_clean()
         return super().save(**kwargs)
+
+    @property
+    def total_cost(self):
+        return self.book.aggregate(Sum("daily_fee")).values()
