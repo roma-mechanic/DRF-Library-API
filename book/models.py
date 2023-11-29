@@ -31,4 +31,4 @@ class Book(models.Model):
         indexes = [models.Index(fields=["title", "author"])]
 
     def __str__(self):
-        return f"{self.author}: {self.title}"
+        return f"{self.author}: {self.title},  daily fee {self.daily_fee} USD"

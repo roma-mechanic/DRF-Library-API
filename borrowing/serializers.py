@@ -2,6 +2,9 @@ from django.db import transaction
 from rest_framework import serializers
 
 from borrowing.models import Borrowing
+from payment.views import (
+    create_checkout_session,
+)
 
 
 class BorrowingSerializer(serializers.ModelSerializer):
@@ -13,6 +16,9 @@ class BorrowingSerializer(serializers.ModelSerializer):
         slug_field="inventory",
         many=True,
         read_only=True,
+    )
+    payment_status = serializers.SlugRelatedField(
+        slug_field="status", read_only=True
     )
 
     class Meta:
@@ -27,6 +33,8 @@ class BorrowingSerializer(serializers.ModelSerializer):
             "book_inventory",
             "is_active",
             "user",
+            "total_cost",
+            "payment_status",
         ]
         read_only_fields = [
             "id",
@@ -40,17 +48,21 @@ class BorrowingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         with transaction.atomic():
             books_data = validated_data.pop("book")
+            print(books_data)
             borrow = Borrowing.objects.create(**validated_data)
             for book in books_data:
                 if book.inventory != 0:
                     book.inventory -= 1
                     book.save()
                     borrow.book.add(book)
+
                 else:
                     raise serializers.ValidationError(
                         f"The book '{book.title}' temporarily unavailable"
                     )
-            return borrow
+            create_checkout_session(borrow.id)
+
+        return borrow
 
 
 class BorrowingBookReturnSerializer(serializers.ModelSerializer):

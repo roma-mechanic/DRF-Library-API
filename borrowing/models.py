@@ -35,6 +35,11 @@ class Borrowing(models.Model):
         self.full_clean()
         return super().save(**kwargs)
 
+    """
+    Calculation of the cost of borrowing for the entire period (BORROWING_DAYS)
+    """
+
     @property
     def total_cost(self):
-        return self.book.aggregate(Sum("daily_fee")).values()
+        daily_fee_all_books = self.book.aggregate(sum=Sum("daily_fee"))
+        return daily_fee_all_books["sum"] * BORROWING_DAYS

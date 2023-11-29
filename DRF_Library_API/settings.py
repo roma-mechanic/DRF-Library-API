@@ -13,6 +13,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+from stripe.api_resources import checkout
 
 load_dotenv()
 
@@ -175,4 +176,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
-DOMAIN_URL = "http://127.0.0.1:8000/"
+DOMAIN_URL = "http://localhost:8000/"

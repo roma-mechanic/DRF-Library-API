@@ -1,7 +1,8 @@
 import stripe
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.http import JsonResponse, HttpResponseNotFound
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import RedirectView
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -9,29 +10,29 @@ from rest_framework.permissions import IsAuthenticated
 from DRF_Library_API import settings
 from borrowing.models import Borrowing
 from payment.models import Payment
+from payment.serializers import PaymentSerializer
 
 
-def create_item_attr_dict(item, count=1):
+def create_item_attr_dict(book):
     item_attr_dict = {
         "price_data": {
             "currency": "usd",
-            "unit_amount": int(item.price * 100),
+            "unit_amount": int(book.daily_fee * settings.BORROWING_DAYS * 100),
             "product_data": {
-                "name": item.name,
+                "name": book.title,
             },
         },
-        "quantity": count,
+        "quantity": 1,
     }
     return item_attr_dict
 
 
-def create_line_items_single_purchase(item):
-    return [create_item_attr_dict(item)]
-
-
-def create_checkout_session(line_creation_func, item_object):
+@csrf_exempt
+def create_checkout_session(borrow_id):  # borrowing_id
     domain_url = settings.DOMAIN_URL
     stripe.api_key = settings.STRIPE_SECRET_KEY
+    borrow = Borrowing.objects.get(id=borrow_id)
+    books = borrow.book.all()
 
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -41,26 +42,50 @@ def create_checkout_session(line_creation_func, item_object):
             cancel_url=domain_url + "cancel/",
             payment_method_types=["card"],
             mode="payment",
-            line_items=line_creation_func(item_object),
+            line_items=[create_item_attr_dict(book) for book in books],
         )
     except Exception as err:
         return JsonResponse({"error": str(err)})
     else:
+        payment = Payment()
+        payment.borrowing = borrow
+        payment.session_id = checkout_session.id
+        payment.session_url = checkout_session.url
+        payment.money_to_pay = borrow.total_cost
+        payment.save()
         return checkout_session
-
-
-class PurchaseView(LoginRequiredMixin, RedirectView):
-    def get(self, request, *args, **kwargs):
-        item = Borrowing.objects.get(pk=self.kwargs.get("pk"))
-        session = create_checkout_session(
-            create_line_items_single_purchase, item
-        )
-        return redirect(session.url, code=303)
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.select_related("borrowing")
     permission_classes = (IsAuthenticated,)
+    serializer_class = PaymentSerializer
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user.profile)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        current_user = self.request.user
+        if not current_user.is_staff and not current_user.is_superuser:
+            qs = qs.filter(customer_email=self.request.user.email)
+
+        return qs
+
+
+def payment_success_view(request):
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    session_id = request.GET.get("session_id")
+    if session_id is None:
+        return HttpResponseNotFound()
+    session = stripe.checkout.Session.retrieve(session_id)
+    payment = get_object_or_404(Payment, session_id=session_id)
+    if payment.status == "pending":
+        payment.status = "paid"
+        payment.save()
+
+    return f"Thanks for your order, {session.customer}"
+
+
+def payment_failed_view(request):
+    return "Payment can be paid a bit later (but the session is available for only 24h)"
