@@ -1,9 +1,8 @@
 import stripe
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse, HttpResponseNotFound
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import RedirectView
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -27,8 +26,18 @@ def create_item_attr_dict(book):
     return item_attr_dict
 
 
+def get_success_url(request):
+    success_url = request.build_absolute_uri(reverse("success"))
+    return success_url
+
+
+def get_cancel_url(request):
+    cancel_url = request.build_absolute_uri(reverse("failed"))
+    return cancel_url
+
+
 @csrf_exempt
-def create_checkout_session(borrow_id):  # borrowing_id
+def create_checkout_session(borrow_id, request):
     domain_url = settings.DOMAIN_URL
     stripe.api_key = settings.STRIPE_SECRET_KEY
     borrow = Borrowing.objects.get(id=borrow_id)
@@ -36,10 +45,9 @@ def create_checkout_session(borrow_id):  # borrowing_id
 
     try:
         checkout_session = stripe.checkout.Session.create(
-            success_url=(
-                domain_url + "success?session_id={CHECKOUT_SESSION_ID}"
-            ),
-            cancel_url=domain_url + "cancel/",
+            success_url=request.build_absolute_uri(reverse("payment:success"))
+            + "?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=request.build_absolute_uri(reverse("payment:failed")),
             payment_method_types=["card"],
             mode="payment",
             line_items=[create_item_attr_dict(book) for book in books],
@@ -53,7 +61,7 @@ def create_checkout_session(borrow_id):  # borrowing_id
         payment.session_url = checkout_session.url
         payment.money_to_pay = borrow.total_cost
         payment.save()
-        return checkout_session
+        return redirect(checkout_session.url, code=303)
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -80,6 +88,8 @@ def payment_success_view(request):
         return HttpResponseNotFound()
     session = stripe.checkout.Session.retrieve(session_id)
     payment = get_object_or_404(Payment, session_id=session_id)
+    serialiser = PaymentSerializer
+
     if payment.status == "pending":
         payment.status = "paid"
         payment.save()

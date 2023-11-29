@@ -15,5 +15,5 @@ router.register("", PaymentViewSet)
 urlpatterns = [
     path("", include(router.urls), name="payment"),
     path("success/", payment_success_view, name="success"),
-    path("cancel/", payment_failed_view, name="cancel"),
+    path("failed/", payment_failed_view, name="failed"),
 ]
