@@ -18,7 +18,7 @@ class BorrowingSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     payment_status = serializers.SlugRelatedField(
-        slug_field="status", read_only=True
+        source="payment", slug_field="status", read_only=True, many=True
     )
 
     class Meta:
@@ -60,7 +60,9 @@ class BorrowingSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         f"The book '{book.title}' temporarily unavailable"
                     )
-            create_checkout_session(borrow.id)
+            session = create_checkout_session(
+                borrow.id, self.context["request"]
+            )
 
         return borrow
 
