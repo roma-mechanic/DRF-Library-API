@@ -26,16 +26,6 @@ def create_item_attr_dict(book):
     return item_attr_dict
 
 
-def get_success_url(request):
-    success_url = request.build_absolute_uri(reverse("success"))
-    return success_url
-
-
-def get_cancel_url(request):
-    cancel_url = request.build_absolute_uri(reverse("failed"))
-    return cancel_url
-
-
 @csrf_exempt
 def create_checkout_session(borrow_id, request):
     domain_url = settings.DOMAIN_URL
@@ -80,21 +70,24 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         return qs
 
+    def get_object(self):
+        session_id = self.request.GET.get("session_id")
+        payment = get_object_or_404(Payment, session_id=session_id)
+        return payment
 
-def payment_success_view(request):
-    stripe.api_key = settings.STRIPE_SECRET_KEY
-    session_id = request.GET.get("session_id")
-    if session_id is None:
-        return HttpResponseNotFound()
-    session = stripe.checkout.Session.retrieve(session_id)
-    payment = get_object_or_404(Payment, session_id=session_id)
-    serialiser = PaymentSerializer
+    def payment_success_view(self, request):
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        session_id = request.GET.get("session_id")
+        if session_id is None:
+            return HttpResponseNotFound()
+        session = stripe.checkout.Session.retrieve(session_id)
+        payment = get_object_or_404(Payment, session_id=session_id)
 
-    if payment.status == "pending":
-        payment.status = "paid"
-        payment.save()
+        if payment.status == "pending":
+            payment.status = "paid"
+            payment.save()
 
-    return f"Thanks for your order, {session.customer}"
+        return f"Thanks for your order, {session.customer}"
 
 
 def payment_failed_view(request):
