@@ -64,19 +64,6 @@ class APILogoutView(GenericAPIView):
         return Response({"status": "OK, goodbye"})
 
 
-# class UserPostListAPIView(ListAPIView):
-#     """Search for all borrows by a given user by his UserProfile ID"""
-#
-#     serializer_class = PostListSerializer
-#
-#     def get_queryset(self):
-#         return (
-#             Post.objects.filter(author__id=self.kwargs["pk"])
-#             .select_related("author")
-#             .prefetch_related("comments", "likes")
-#         )
-
-
 class UserProfileListView(generics.ListAPIView):
     queryset = UserProfile.objects.select_related("user")
 
@@ -111,7 +98,7 @@ class UserProfileListView(generics.ListAPIView):
                 type=str,
                 description="Search user by username  (ex: ?username=Bob)",
             ),
-        ]
+        ],
     )
     def get(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
