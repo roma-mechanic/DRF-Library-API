@@ -4,9 +4,7 @@ from rest_framework import routers
 from payment.views import (
     PaymentViewSet,
     payment_failed_view,
-    PaymentSuccessViewSet,
     payment_success_view,
-    # PurchaseView,
 )
 
 app_name = "payment"

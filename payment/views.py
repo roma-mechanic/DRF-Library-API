@@ -1,11 +1,10 @@
 import stripe
-from django.http import JsonResponse, HttpResponseNotFound
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import viewsets, generics
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import GenericViewSet
 
 from DRF_Library_API import settings
 from borrowing.models import Borrowing
@@ -29,7 +28,6 @@ def create_item_attr_dict(book):
 
 @csrf_exempt
 def create_checkout_session(borrow_id, request):
-    domain_url = settings.DOMAIN_URL
     stripe.api_key = settings.STRIPE_SECRET_KEY
     borrow = Borrowing.objects.get(id=borrow_id)
     books = borrow.book.all()
@@ -37,7 +35,7 @@ def create_checkout_session(borrow_id, request):
     try:
         checkout_session = stripe.checkout.Session.create(
             success_url=request.build_absolute_uri(reverse("payment:success"))
-                        + "?session_id={CHECKOUT_SESSION_ID}",
+            + "?session_id={CHECKOUT_SESSION_ID}",
             cancel_url=request.build_absolute_uri(reverse("payment:failed")),
             payment_method_types=["card"],
             mode="payment",
@@ -52,7 +50,7 @@ def create_checkout_session(borrow_id, request):
         payment.session_url = checkout_session.url
         payment.money_to_pay = borrow.total_cost
         payment.save()
-        return redirect(checkout_session.url, code=303)
+    return redirect(checkout_session.url, code=303)
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -81,26 +79,6 @@ def payment_success_view(request):
         payment.save()
 
     return redirect(reverse("borrowing:borrowing-list"))
-
-
-class PaymentSuccessViewSet(generics.RetrieveUpdateAPIView):
-    queryset = Payment.objects.select_related("borrowing")
-    permission_classes = (IsAuthenticated,)
-    serializer_class = PaymentSerializer
-
-    def get_object(self):
-        session_id = self.request.GET.get("session_id")
-        if session_id is None:
-            return HttpResponseNotFound()
-        payment = get_object_or_404(Payment, session_id=session_id)
-        return payment
-
-    def patch(self, request, *args, **kwargs):
-        payment = self.get_object()
-        if payment.status == "pending":
-            payment.status = "paid"
-            payment.save()
-        return self.partial_update(request, *args, **kwargs)
 
 
 def payment_failed_view(request):
