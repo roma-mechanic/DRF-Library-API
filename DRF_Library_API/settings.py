@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "book",
     "borrowing",
     "payment",
+    "bot",
 ]
 
 MIDDLEWARE = [
@@ -176,4 +177,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
-DOMAIN_URL = "http://localhost:8000/"
+
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
