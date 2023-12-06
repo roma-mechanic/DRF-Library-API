@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from DRF_Library_API import settings
 from borrowing.models import Borrowing
+from bot.main_bot import telegram_bot_sendtext
 from payment.models import Payment
 from payment.serializers import PaymentSerializer
 
@@ -77,6 +78,16 @@ def payment_success_view(request):
     if payment.status == "pending":
         payment.status = "paid"
         payment.save()
+
+    message = (
+        f"{payment.borrowing.user.username}.\n "
+        f"Your order {payment.borrowing.pk} is paid and created {payment.borrowing.borrow_date}\n"
+        f"Date of return of books {payment.borrowing.expected_return_date}\n"
+        f"If the deadline is overdue,"
+        f" you will need to pay an additional fine for overdue days"
+        f" in the amount of double the cost of the order"
+    )
+    telegram_bot_sendtext(message)
 
     return redirect(reverse("borrowing:borrowing-list"))
 
