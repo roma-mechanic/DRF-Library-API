@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.conf import settings
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -11,6 +12,7 @@ from borrowing.serializers import (
     BorrowingSerializer,
     BorrowingBookReturnSerializer,
 )
+from bot.main_bot import telegram_bot_sendtext
 
 
 class BorrowingViewSet(viewsets.ModelViewSet):
@@ -88,19 +90,3 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response("This borrowing is already returned")
-
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #
-    #     books = [Book.objects.get(id=pk) for pk in self.request.data["book"]]
-    #     session = create_checkout_session(
-    #         create_line_items_bunch_purchase, books
-    #     )
-    #     redirect(session.url, code=303)
-    #
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(
-    #         serializer.data, status=status.HTTP_201_CREATED, headers=headers
-    #     )

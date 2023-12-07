@@ -31,7 +31,7 @@ def create_item_attr_dict(book):
 def create_checkout_session(borrow_id, request):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     borrow = Borrowing.objects.get(id=borrow_id)
-    books = borrow.book.all()
+    books = borrow.book.all().prefetch_related("book")
 
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -74,6 +74,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 def payment_success_view(request):
     session_id = request.GET["session_id"]
     payment = get_object_or_404(Payment, session_id=session_id)
+    user = payment.borrowing.user
 
     if payment.status == "pending":
         payment.status = "paid"
@@ -83,11 +84,12 @@ def payment_success_view(request):
         f"{payment.borrowing.user.username}.\n "
         f"Your order {payment.borrowing.pk} is paid and created {payment.borrowing.borrow_date}\n"
         f"Date of return of books {payment.borrowing.expected_return_date}\n"
+        f"Your payment status is {payment.status}\n"
         f"If the deadline is overdue,"
         f" you will need to pay an additional fine for overdue days"
         f" in the amount of double the cost of the order"
     )
-    telegram_bot_sendtext(message)
+    telegram_bot_sendtext(message, user.telebot_chat_ID)
 
     return redirect(reverse("borrowing:borrowing-list"))
 

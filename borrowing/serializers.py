@@ -60,9 +60,7 @@ class BorrowingSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         f"The book '{book.title}' temporarily unavailable"
                     )
-            session = create_checkout_session(
-                borrow.id, self.context["request"]
-            )
+            create_checkout_session(borrow.id, self.context["request"])
 
         return borrow
 
