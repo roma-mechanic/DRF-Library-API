@@ -13,6 +13,8 @@ from borrowing.serializers import (
     BorrowingBookReturnSerializer,
 )
 from bot.main_bot import telegram_bot_sendtext
+from payment.models import Payment
+from payment.views import create_checkout_session
 
 
 class BorrowingViewSet(viewsets.ModelViewSet):
@@ -77,6 +79,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     def return_book(self, request, pk=None):
         borrowing = self.get_object()
         if borrowing.is_active:
+            user = borrowing.user
             books = borrowing.book.all()
             for book in books:
                 book.inventory += 1
@@ -87,6 +90,27 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            chat_id = user.profile.chat_id
+            telegram_bot_sendtext(
+                f"Borrowing with ID {borrowing.id} has been returned",
+                chat_id=chat_id,
+            )
+
+            if borrowing.actual_return_date > borrowing.expected_return_date:
+                telegram_bot_sendtext(
+                    f"Borrowing with ID {borrowing.id} is overdue. You must pay a fine",
+                    chat_id=chat_id,
+                )
+                create_checkout_session(
+                    borrowing.id,
+                    self.request,
+                    {
+                        "days": settings.FINE_MULTIPLIER,
+                        "payment_type": Payment.TypeChoices.FINE,
+                        "payment_status": Payment.StatusChoices.PENDING
+                    },
+                )
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response("This borrowing is already returned")
