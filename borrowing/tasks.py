@@ -1,8 +1,7 @@
 from datetime import date
 
-from django.conf import settings
-
 from celery import shared_task
+from django.conf import settings
 
 from borrowing.models import Borrowing
 from borrowing.serializers import BorrowingSerializer

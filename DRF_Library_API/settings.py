@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = True
 
 AUTH_USER_MODEL = "user.User"
-BORROWING_DAYS = 14
+
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
@@ -178,8 +178,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 
+BORROWING_DAYS = 14
+FINE_MULTIPLIER = 2
+
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-BOT_CHAT_ID = os.getenv("BOT_CHAT_ID")
+USER_CHAT_ID = os.getenv("USER_CHAT_ID")
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
 
 CELERY_BROKER_URL = "redis://localhost:6379"
