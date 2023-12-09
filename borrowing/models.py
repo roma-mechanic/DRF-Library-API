@@ -42,4 +42,5 @@ class Borrowing(models.Model):
     @property
     def total_cost(self):
         daily_fee_all_books = self.book.aggregate(sum=Sum("daily_fee"))
-        return daily_fee_all_books["sum"] * BORROWING_DAYS
+        res = daily_fee_all_books["sum"] * BORROWING_DAYS
+        return round(res, 2)

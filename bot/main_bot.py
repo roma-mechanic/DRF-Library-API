@@ -5,7 +5,7 @@ from django.conf import settings
 from user.models import UserProfile
 
 API_TOKEN = settings.TELEGRAM_TOKEN
-BOT_CHAT_ID = settings.BOT_CHAT_ID
+USER_CHAT_ID = settings.USER_CHAT_ID
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -20,10 +20,10 @@ Hi there, I am LibraryBot.
 I will register you now. Please enter your username that you used when registering in our library.\
 """,
     )
-    bot.register_next_step_handler(message, get_username)
+    bot.register_next_step_handler(message, get_user_chat_id)
 
 
-def get_username(message):
+def get_user_chat_id(message):
     username = message.text.strip().lower().capitalize()
     user = UserProfile.objects.get(username=username)
     if user:
