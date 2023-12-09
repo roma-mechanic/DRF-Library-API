@@ -13,11 +13,11 @@ from payment.models import Payment
 from payment.serializers import PaymentSerializer
 
 
-def create_item_attr_dict(book):
+def create_item_attr_dict(book, days):
     item_attr_dict = {
         "price_data": {
             "currency": "usd",
-            "unit_amount": int(book.daily_fee * settings.BORROWING_DAYS * 100),
+            "unit_amount": int(book.daily_fee * days * 100),
             "product_data": {
                 "name": book.title,
             },
@@ -28,7 +28,7 @@ def create_item_attr_dict(book):
 
 
 @csrf_exempt
-def create_checkout_session(borrow_id, request):
+def create_checkout_session(borrow_id, request, **kwargs):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     borrow = Borrowing.objects.get(id=borrow_id)
     books = borrow.book.all().prefetch_related("book")
@@ -40,16 +40,20 @@ def create_checkout_session(borrow_id, request):
             cancel_url=request.build_absolute_uri(reverse("payment:failed")),
             payment_method_types=["card"],
             mode="payment",
-            line_items=[create_item_attr_dict(book) for book in books],
+            line_items=[
+                create_item_attr_dict(book, kwargs["days"]) for book in books
+            ],
         )
     except Exception as err:
         return JsonResponse({"error": str(err)})
     else:
         payment = Payment()
+        payment.status = kwargs["payment_status"]
+        payment.type = kwargs["payment_type"]
         payment.borrowing = borrow
         payment.session_id = checkout_session.id
         payment.session_url = checkout_session.url
-        payment.money_to_pay = borrow.total_cost
+        payment.money_to_pay = checkout_session.amount_total
         payment.save()
     return redirect(checkout_session.url, code=303)
 
@@ -76,8 +80,8 @@ def payment_success_view(request):
     payment = get_object_or_404(Payment, session_id=session_id)
     user = payment.borrowing.user
 
-    if payment.status == "pending":
-        payment.status = "paid"
+    if payment.status == payment.StatusChoices.PENDING:
+        payment.status = payment.StatusChoices.PAID
         payment.save()
 
     message = (
