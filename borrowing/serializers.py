@@ -1,7 +1,9 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from DRF_Library_API import settings
 from borrowing.models import Borrowing
+from payment.models import Payment
 from payment.views import (
     create_checkout_session,
 )
@@ -60,7 +62,14 @@ class BorrowingSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         f"The book '{book.title}' temporarily unavailable"
                     )
-            create_checkout_session(borrow.id, self.context["request"])
+            create_checkout_session(
+                borrow.id,
+                self.context["request"],
+                {
+                    "days": settings.BORROWING_DAYS,
+                    "payment_type": Payment.TypeChoices.PAYMENT,
+                },
+            )
 
         return borrow
 
