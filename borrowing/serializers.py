@@ -65,10 +65,9 @@ class BorrowingSerializer(serializers.ModelSerializer):
             create_checkout_session(
                 borrow.id,
                 self.context["request"],
-                {
-                    "days": settings.BORROWING_DAYS,
-                    "payment_type": Payment.TypeChoices.PAYMENT,
-                },
+                days=settings.BORROWING_DAYS,
+                payment_type=Payment.TypeChoices.PAYMENT,
+                payment_status=Payment.StatusChoices.PENDING,
             )
 
         return borrow

@@ -31,7 +31,7 @@ def create_item_attr_dict(book, days):
 def create_checkout_session(borrow_id, request, **kwargs):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     borrow = Borrowing.objects.get(id=borrow_id)
-    books = borrow.book.all().prefetch_related("book")
+    books = borrow.book.all()
 
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -53,7 +53,7 @@ def create_checkout_session(borrow_id, request, **kwargs):
         payment.borrowing = borrow
         payment.session_id = checkout_session.id
         payment.session_url = checkout_session.url
-        payment.money_to_pay = checkout_session.amount_total
+        payment.money_to_pay = checkout_session.amount_total / 100
         payment.save()
     return redirect(checkout_session.url, code=303)
 
@@ -88,7 +88,9 @@ def payment_success_view(request):
         f"{payment.borrowing.user.username}.\n "
         f"Your order {payment.borrowing.pk} is paid and created {payment.borrowing.borrow_date}\n"
         f"Date of return of books {payment.borrowing.expected_return_date}\n"
-        f"Your payment status is {payment.status}\n"
+        f"Your payment ID is '{payment.id}'\n"
+        f"Your total amount is {payment.money_to_pay}\n"
+        f"Your payment status is '{payment.status}'\n"
         f"If the deadline is overdue,"
         f" you will need to pay an additional fine for overdue days"
         f" in the amount of double the cost of the order"
