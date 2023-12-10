@@ -90,7 +90,8 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            chat_id = user.profile.chat_id
+
+            chat_id = self.request.user.profile.telebot_chat_ID
             telegram_bot_sendtext(
                 f"Borrowing with ID {borrowing.id} has been returned",
                 chat_id=chat_id,
@@ -104,11 +105,9 @@ class BorrowingViewSet(viewsets.ModelViewSet):
                 create_checkout_session(
                     borrowing.id,
                     self.request,
-                    {
-                        "days": settings.FINE_MULTIPLIER,
-                        "payment_type": Payment.TypeChoices.FINE,
-                        "payment_status": Payment.StatusChoices.PENDING
-                    },
+                    days=settings.FINE_MULTIPLIER,
+                    payment_type=Payment.TypeChoices.FINE,
+                    payment_status=Payment.StatusChoices.PENDING,
                 )
 
             return Response(serializer.data, status=status.HTTP_200_OK)
