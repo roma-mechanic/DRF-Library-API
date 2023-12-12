@@ -1,6 +1,7 @@
 from datetime import date
 
 from celery import shared_task
+
 from django.conf import settings
 
 from borrowing.models import Borrowing
@@ -17,7 +18,7 @@ def checking_borrowings_overdue():
         .prefetch_related("book")
     )
     if borrowings:
-        serializer = BorrowingSerializer(borrowings)
+        serializer = BorrowingSerializer(borrowings, many=True)
         message = f"Next borrowings are overdue {serializer.data}"
         telegram_bot_sendtext(message, settings.ADMIN_CHAT_ID)
     else:

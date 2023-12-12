@@ -31,7 +31,6 @@ DEBUG = True
 
 AUTH_USER_MODEL = "user.User"
 
-
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
@@ -59,6 +58,7 @@ INSTALLED_APPS = [
     "borrowing",
     "payment",
     "bot",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -178,7 +178,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 
-BORROWING_DAYS = 10
+BORROWING_DAYS = 1
 FINE_MULTIPLIER = 2
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
