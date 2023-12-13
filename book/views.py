@@ -1,12 +1,12 @@
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, permissions
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 
 from book.models import Book
 from book.serializers import BookSerializer, BookListSerializer
 
 
-class BookReadOnlyViewSet(viewsets.ModelViewSet):
+class BookViewSet(viewsets.ModelViewSet):
     """
     Lists all the books . Anon users can read books list.
 
@@ -18,6 +18,7 @@ class BookReadOnlyViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Book.objects.all()
+    # permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -29,7 +30,7 @@ class BookReadOnlyViewSet(viewsets.ModelViewSet):
             self.permission_classes = (permissions.AllowAny,)
         if self.action == "retrieve":
             self.permission_classes = (IsAuthenticated,)
-        if self.action == ("update", "destroy", "create", "partial_update"):
+        if self.action in ("update", "destroy", "create", "partial_update"):
             self.permission_classes = (IsAdminUser,)
         return [permission() for permission in self.permission_classes]
 
