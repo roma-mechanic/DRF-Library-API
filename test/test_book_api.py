@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from book.models import Book
-from book.serializers import BookListSerializer, BookSerializer
+from book.serializers import BookListSerializer
 
 
 def sample_book(**params):
@@ -45,6 +45,35 @@ class UnauthenticatedBookAPITest(TestCase):
             reverse("book:books-detail", args=[book.id])
         )
         print(reverse("book:books-detail", args=[book.id]))
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unauthenticated_user_cannot_create_books(self):
+        book_data = {
+            "title": "New Book",
+            "author": "New Author",
+            "cover": "soft",
+            "inventory": 5,
+            "daily_fee": 0.99,
+        }
+
+        response = self.client.post(reverse("book:books-list"), book_data)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unauthenticated_user_cannot_edit_books(self):
+        book = sample_book()
+        response = self.client.patch(
+            reverse("book:books-detail", args=[book.id]),
+            {"title": "Updated Book", "author": "Updated Author"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unauthenticated_user_cannot_delete_books(self):
+        book = sample_book()
+        response = self.client.delete(
+            reverse("book:books-detail", args=[book.id])
+        )
+
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
