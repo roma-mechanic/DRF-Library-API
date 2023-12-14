@@ -37,7 +37,12 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
             return queryset.distinct()
 
-        return queryset.filter(user=self.request.user.profile)
+        if hasattr(self.request.user, "profile"):
+            queryset = queryset.filter(user=self.request.user.profile)
+        else:
+            queryset = queryset.none()
+
+        return queryset
 
     @extend_schema(
         summary="Search user borrowings by user ID or/and borrowings is_active True or False ",
