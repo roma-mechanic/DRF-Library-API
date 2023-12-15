@@ -122,14 +122,14 @@ class AuthenticatedBookAPITest(TestCase):
         serializer1 = BookListSerializer(book1)
         serializer2 = BookListSerializer(book2)
         response = self.client.get(
-            reverse("book:books-list"), {"title": "New Book"}
+            reverse("book:books-list"), data={"title": "New Book"}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(serializer1.data, response.data)
         self.assertNotIn(serializer2.data, response.data)
 
         response = self.client.get(
-            reverse("book:books-list"), {"author": "Another Author"}
+            reverse("book:books-list"), data={"author": "Another Author"}
         )
         self.assertIn(serializer2.data, response.data)
         self.assertNotIn(serializer1.data, response.data)

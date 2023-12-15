@@ -79,6 +79,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         methods=["PATCH"],
         detail=True,
         url_path="return",
+        # url_name="return-book",
         permission_classes=[IsAdminUser],
     )
     def return_book(self, request, pk=None):
@@ -87,6 +88,9 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             user = borrowing.user
             books = borrowing.book.all()
             for book in books:
+
+                print("Loop is running")
+
                 book.inventory += 1
                 book.save()
             data = {"actual_return_date": date.today(), "is_active": False}
@@ -96,7 +100,9 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            chat_id = self.request.user.profile.telebot_chat_ID
+            print("serializer save")
+
+            chat_id = borrowing.user.telebot_chat_ID
             telegram_bot_sendtext(
                 f"Borrowing with ID {borrowing.id} has been returned",
                 chat_id=chat_id,
