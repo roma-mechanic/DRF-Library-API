@@ -8,18 +8,7 @@ from rest_framework.test import APIClient
 
 from book.models import Book
 from book.serializers import BookListSerializer
-
-
-def sample_book(**params):
-    defaults = {
-        "title": "Sample Book",
-        "author": "Test Author",
-        "cover": "hard",
-        "inventory": 10,
-        "daily_fee": 1.0,
-    }
-    defaults.update(params)
-    return Book.objects.create(**defaults)
+from test.sample_functions import sample_book
 
 
 class UnauthenticatedBookAPITest(TestCase):

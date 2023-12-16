@@ -5,49 +5,14 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from book.models import Book
-from book.serializers import BookListSerializer
 from borrowing.models import Borrowing
 from borrowing.serializers import BorrowingSerializer
+from test.sample_functions import (
+    sample_borrowing,
+    sample_user_profile_object,
+    sample_user,
+)
 from test.test_book_api import sample_book
-from user.models import UserProfile
-
-
-def sample_user(**params):
-    defaults = {"email": "sample@sample.com", "password": "samplepassword"}
-    defaults.update(params)
-    user, created = get_user_model().objects.get_or_create(
-        email=defaults["email"], defaults=defaults
-    )
-    if not created:
-        user.set_password(defaults["password"])
-        user.save()
-    return user
-
-
-def sample_user_profile_object(**params):
-    defaults = {
-        "user": sample_user(),
-        "username": "sample_username",
-    }
-    defaults.update(params)
-    user_profile, created = UserProfile.objects.get_or_create(
-        user=defaults["user"], defaults=defaults
-    )
-    return user_profile
-
-
-def sample_borrowing(**params):
-    test_book_object = sample_book()
-
-    defaults = {
-        "borrow_date": "2023-12-27",
-        "user": sample_user_profile_object(),
-        "is_active": True,
-    }
-    defaults.update(params)
-    borrowing = Borrowing.objects.create(**defaults)
-    borrowing.book.set([test_book_object])
-    return borrowing
 
 
 class UnauthenticatedTests(TestCase):

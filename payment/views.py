@@ -32,6 +32,7 @@ def create_checkout_session(borrow_id, request, **kwargs):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     borrow = Borrowing.objects.get(id=borrow_id)
     books = borrow.book.all()
+    print("session start")
 
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -55,6 +56,7 @@ def create_checkout_session(borrow_id, request, **kwargs):
         payment.session_url = checkout_session.url
         payment.money_to_pay = checkout_session.amount_total / 100
         payment.save()
+        print("session created")
     return redirect(checkout_session.url, code=303)
 
 
