@@ -88,9 +88,6 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             user = borrowing.user
             books = borrowing.book.all()
             for book in books:
-
-                print("Loop is running")
-
                 book.inventory += 1
                 book.save()
             data = {"actual_return_date": date.today(), "is_active": False}
@@ -99,8 +96,6 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-
-            print("serializer save")
 
             chat_id = borrowing.user.telebot_chat_ID
             telegram_bot_sendtext(

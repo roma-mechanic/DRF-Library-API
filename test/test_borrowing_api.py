@@ -2,12 +2,12 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient
 
 from book.models import Book
 from book.serializers import BookListSerializer
 from borrowing.models import Borrowing
-from borrowing.serializers import BorrowingSerializer, BorrowingBookReturnSerializer
+from borrowing.serializers import BorrowingSerializer
 from test.test_book_api import sample_book
 from user.models import UserProfile
 
@@ -28,7 +28,6 @@ def sample_user_profile_object(**params):
     defaults = {
         "user": sample_user(),
         "username": "sample_username",
-        # "telebot_chat_ID": 1111111111
     }
     defaults.update(params)
     user_profile, created = UserProfile.objects.get_or_create(
@@ -160,9 +159,6 @@ class AuthenticatedBorrowingAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(final_book_count, book.inventory - 1)
 
-
-
-
     def test_authenticated_user_can_delete_borrowing(self):
         book = sample_book()
         user_profile = sample_user_profile_object(
@@ -220,19 +216,18 @@ class AdminBorrowingTest(TestCase):
         self.assertNotIn(serializer1.data, response.data)
 
     def test_the_number_of_books_after_return_is_increased(self):
-        borrowing = sample_borrowing()
-        serializer = BorrowingSerializer(borrowing)
-        print(f"Sample borrowing is created\n{serializer.data}")
+        user_profile = sample_user_profile_object(telebot_chat_ID=1111111111)
+        borrowing = sample_borrowing(user=user_profile)
+        serializer_before_return = BorrowingSerializer(borrowing)
+        books_before = serializer_before_return.data["book_inventory"][0]
 
         url = reverse("borrowing:borrowing-return-book", args=(borrowing.id,))
-        print(url)
         response = self.client.patch(url)
-        # response = self.client.patch(f"http://127.0.0.1:8000/api/borrowings/{borrowing.id}/return/")
-        print(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        final_book_count = borrowing.book.all()
-        for book in final_book_count:
-            print(f"book_inventory  {book.inventory}")
-        print(final_book_count)
-        serializer = BookListSerializer(final_book_count, many=True)
-        print(serializer.data)
+
+        serializer_after_return = BorrowingSerializer(borrowing)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            serializer_after_return.data["book_inventory"][0],
+            serializer_before_return.data["book_inventory"][0] + 1,
+        )
