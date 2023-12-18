@@ -24,6 +24,7 @@ def create_item_attr_dict(book, days):
         },
         "quantity": 1,
     }
+    print(item_attr_dict)
     return item_attr_dict
 
 
@@ -46,8 +47,11 @@ def create_checkout_session(borrow_id, request, **kwargs):
             ],
         )
     except Exception as err:
+        # print(str(err))
         return JsonResponse({"error": str(err)})
+
     else:
+        print("start create Payment")
         payment = Payment()
         payment.status = kwargs["payment_status"]
         payment.type = kwargs["payment_type"]
