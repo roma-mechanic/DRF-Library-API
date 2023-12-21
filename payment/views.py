@@ -33,7 +33,6 @@ def create_checkout_session(borrow_id, request, **kwargs):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     borrow = Borrowing.objects.get(id=borrow_id)
     books = borrow.book.all()
-    print("session start")
 
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -47,11 +46,9 @@ def create_checkout_session(borrow_id, request, **kwargs):
             ],
         )
     except Exception as err:
-        # print(str(err))
         return JsonResponse({"error": str(err)})
 
     else:
-        print("start create Payment")
         payment = Payment()
         payment.status = kwargs["payment_status"]
         payment.type = kwargs["payment_type"]
@@ -60,7 +57,6 @@ def create_checkout_session(borrow_id, request, **kwargs):
         payment.session_url = checkout_session.url
         payment.money_to_pay = checkout_session.amount_total / 100
         payment.save()
-        print("session created")
     return redirect(checkout_session.url, code=303)
 
 
@@ -83,6 +79,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
 def payment_success_view(request):
     session_id = request.GET["session_id"]
+
     payment = get_object_or_404(Payment, session_id=session_id)
     user = payment.borrowing.user
 
@@ -101,6 +98,7 @@ def payment_success_view(request):
         f" you will need to pay an additional fine for overdue days"
         f" in the amount of double the cost of the order"
     )
+
     telegram_bot_sendtext(message, user.telebot_chat_ID)
 
     return redirect(reverse("borrowing:borrowing-list"))
