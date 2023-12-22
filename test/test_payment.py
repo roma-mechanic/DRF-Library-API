@@ -75,8 +75,7 @@ class PaymentTest(APITestCase):
 
         factory = APIRequestFactory()
         request = factory.get(
-            reverse("payment:success")
-            + f"?session_id={payment[0].session_id}"
+            reverse("payment:success") + f"?session_id={payment[0].session_id}"
         )
         payment_success_view(request)
         mock_send_text.assert_called_once()
