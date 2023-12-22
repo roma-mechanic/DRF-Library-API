@@ -1,6 +1,7 @@
 from unittest import mock
 
 import stripe
+from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase, APIRequestFactory
 
 from payment.models import Payment
@@ -74,7 +75,8 @@ class PaymentTest(APITestCase):
 
         factory = APIRequestFactory()
         request = factory.get(
-            "http://127.0.0.1:8000/api/payment/success/?session_id=3"
+            reverse("payment:success")
+            + f"?session_id={payment[0].session_id}"
         )
         payment_success_view(request)
         mock_send_text.assert_called_once()
