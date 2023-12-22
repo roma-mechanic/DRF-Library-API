@@ -131,6 +131,8 @@ REST_FRAMEWORK = {
     ),
     "DATE_INPUT_FORMATS": ["%d.%m.%Y"],
     "DATE_FORMAT": "%d.%m.%Y",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 5,
 }
 
 SPECTACULAR_SETTINGS = {

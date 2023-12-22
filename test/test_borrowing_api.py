@@ -170,15 +170,15 @@ class AdminBorrowingTest(TestCase):
 
         response = self.client.get(url, data={"user_id": user_profile1.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(serializer1.data, response.data)
-        self.assertNotIn(serializer2.data, response.data)
+        self.assertEqual(response.data["results"][0], serializer1.data)
+        self.assertNotEqual(response.data["results"][0], serializer2.data)
 
         response = self.client.get(
             url, data={"is_active": borrowing2.is_active}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(serializer2.data, response.data)
-        self.assertNotIn(serializer1.data, response.data)
+        self.assertEqual(response.data["results"][0], serializer2.data)
+        self.assertNotEqual(response.data["results"][0], serializer1.data)
 
     def test_the_number_of_books_after_return_is_increased(self):
         user_profile = sample_user_profile_object(telebot_chat_ID=1111111111)

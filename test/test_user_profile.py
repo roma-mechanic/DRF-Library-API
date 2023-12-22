@@ -74,7 +74,7 @@ class AuthenticatedUserProfileAPITest(APITestCase):
         profiles = UserProfile.objects.all()
         serializer = UserProfileListSerializer(profiles, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(serializer.data, res.data)
+        self.assertEqual(serializer.data, res.data["results"])
 
     def test_authenticated_user_can_get_profile_detail(self):
         profile = sample_user_profile_object()

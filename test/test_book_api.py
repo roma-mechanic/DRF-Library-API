@@ -25,8 +25,8 @@ class UnauthenticatedBookAPITest(TestCase):
 
         response = self.client.get(reverse("book:books-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data["results"], serializer.data)
+        self.assertEqual(len(response.data["results"]), 3)
 
     def test_unauthenticated_user_cannot_access_retrieve_books(self):
         book = sample_book()
@@ -114,14 +114,14 @@ class AuthenticatedBookAPITest(TestCase):
             reverse("book:books-list"), data={"title": "New Book"}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(serializer1.data, response.data)
-        self.assertNotIn(serializer2.data, response.data)
+        self.assertEqual(serializer1.data, response.data["results"][0])
+        self.assertNotEqual(serializer2.data, response.data["results"][0])
 
         response = self.client.get(
             reverse("book:books-list"), data={"author": "Another Author"}
         )
-        self.assertIn(serializer2.data, response.data)
-        self.assertNotIn(serializer1.data, response.data)
+        self.assertEqual(serializer2.data, response.data["results"][0])
+        self.assertNotEqual(serializer1.data, response.data["results"][0])
 
 
 class AdminBookAPITest(TestCase):
